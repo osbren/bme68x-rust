@@ -589,7 +589,7 @@ impl<I: Interface> Device<I> {
         }
     }
 
-    unsafe fn raw_get_data(
+    pub unsafe fn raw_get_data(
         &mut self,
         op_mode: u8,
         data: *mut SensorData,

@@ -20,7 +20,7 @@ impl Interface for SpiDriver {
         std::thread::sleep(delay);
     }
 
-    fn write(&self, reg_addr: u8, reg_data: &[u8]) -> Result<(), Error> {
+    fn write(&mut self, reg_addr: u8, reg_data: &[u8]) -> Result<(), Error> {
         let data: String = reg_data.iter().map(|b| format!("0x{:x},", b)).collect();
         let cmd = format!("s w 0x{:x} w {} u", reg_addr, data);
         Command::new(&self.spicl)
@@ -31,7 +31,7 @@ impl Interface for SpiDriver {
         Ok(())
     }
 
-    fn read(&self, reg_addr: u8, reg_data: &mut [u8]) -> Result<(), Error> {
+    fn read(&mut self, reg_addr: u8, reg_data: &mut [u8]) -> Result<(), Error> {
         let len = reg_data.len();
         let cmd = format!("s w 0x{:x} r {len} u", reg_addr);
         let output = Command::new(&self.spicl)
@@ -106,7 +106,9 @@ fn main() -> Result<(), Error> {
         // Get the sensor data
         let mut n_fields = 0;
         let mut data: SensorData = SensorData::default();
-        bme.get_data(1, &mut data, &mut n_fields)?;
+        unsafe {
+            bme.raw_get_data(1, &mut data, &mut n_fields)?;
+        }
 
         if n_fields != 0 {
             println!(
