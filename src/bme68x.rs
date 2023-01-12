@@ -201,6 +201,20 @@ impl GasHeaterConfig {
         conf.heatr_dur = duration;
         conf
     }
+    pub fn heater_temp_profile(&self, temp_profile: &[u16]) -> Self {
+        let mut conf = *self;
+        let mut profile: [u16; 10usize] = [0; 10];
+        profile.copy_from_slice(temp_profile);
+        conf.heatr_temp_prof = profile.as_mut_ptr();
+        conf
+    }
+    pub fn heater_dur_profile(&self, dur_profile: &[u16]) -> Self {
+        let mut conf = *self;
+        let mut profile: [u16; 10usize] = [0; 10];
+        profile.copy_from_slice(dur_profile);
+        conf.heatr_dur_prof = profile.as_mut_ptr();
+        conf
+    }
     pub fn disable(&self) -> Self {
         let mut conf = *self;
         conf.enable = false as u8;
@@ -225,17 +239,19 @@ impl Default for GasHeaterConfig {
 /// BME68x Device Controller
 ///
 /// ```
+///  use bme68x_rust::{Device, DeviceConfig, Sample, Odr, Filter};
+///
 ///  let mut bme = Device::initialize(SpiDriver {
 ///      spicl: args.spicl,
 ///      tty: args.tty,
-///  })?;
+///  }).unwrap();
 ///
-///  bme.set_config(DeviceConfigig::default()
-///                  .filter(0)
-///                  .odr(8)
-///                  .oversample_humidity(5)
-///                  .oversample_pressure(1)
-///                  .oversample_temperature(2))?;
+///  bme.set_config(DeviceConfig::default()
+///                  .filter(Filter::Off)
+///                  .odr(Odr::StandbyNone)
+///                  .oversample_humidity(Sample::Off)
+///                  .oversample_pressure(Sample::Once)
+///                  .oversample_temperature(Sample::X2));
 /// ```
 ///
 pub struct Device<I: Interface> {
