@@ -201,11 +201,17 @@ impl GasHeaterConfig {
         conf.heatr_dur = duration;
         conf
     }
+    pub fn heater_shared_duration(&self, duration: u16) -> Self {
+        let mut conf = *self;
+        conf.shared_heatr_dur = duration;
+        conf
+    }
     pub fn heater_temp_profile(&self, temp_profile: &[u16]) -> Self {
         let mut conf = *self;
         let mut profile: [u16; 10usize] = [0; 10];
         profile.copy_from_slice(temp_profile);
         conf.heatr_temp_prof = profile.as_mut_ptr();
+        conf.profile_len = 10;
         conf
     }
     pub fn heater_dur_profile(&self, dur_profile: &[u16]) -> Self {
@@ -213,6 +219,7 @@ impl GasHeaterConfig {
         let mut profile: [u16; 10usize] = [0; 10];
         profile.copy_from_slice(dur_profile);
         conf.heatr_dur_prof = profile.as_mut_ptr();
+        conf.profile_len = 10;
         conf
     }
     pub fn disable(&self) -> Self {
