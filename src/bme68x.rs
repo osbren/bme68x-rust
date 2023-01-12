@@ -68,7 +68,7 @@ pub enum CommInterface {
     I2C = 1,
 }
 
-#[derive(Copy, Clone, Default)]
+#[derive(Copy, Clone, Default, Debug)]
 #[repr(C)]
 pub struct SensorData {
     pub status: u8,
@@ -176,13 +176,13 @@ impl DeviceConfig {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct GasHeaterConfig {
-    pub(crate) enable: u8,
-    pub(crate) heatr_temp: u16,
-    pub(crate) heatr_dur: u16,
-    pub(crate) heatr_temp_prof: *mut u16,
-    pub(crate) heatr_dur_prof: *mut u16,
-    pub(crate) profile_len: u8,
-    pub(crate) shared_heatr_dur: u16,
+    pub enable: u8,
+    pub heatr_temp: u16,
+    pub heatr_dur: u16,
+    pub heatr_temp_prof: *mut u16,
+    pub heatr_dur_prof: *mut u16,
+    pub profile_len: u8,
+    pub shared_heatr_dur: u16,
 }
 
 impl GasHeaterConfig {
@@ -206,19 +206,15 @@ impl GasHeaterConfig {
         conf.shared_heatr_dur = duration;
         conf
     }
-    pub fn heater_temp_profile(&self, temp_profile: &[u16]) -> Self {
+    pub fn heater_temp_profile(&self, temp_profile: *mut u16) -> Self {
         let mut conf = *self;
-        let mut profile: [u16; 10usize] = [0; 10];
-        profile.copy_from_slice(temp_profile);
-        conf.heatr_temp_prof = profile.as_mut_ptr();
+        conf.heatr_temp_prof = temp_profile;
         conf.profile_len = 10;
         conf
     }
-    pub fn heater_dur_profile(&self, dur_profile: &[u16]) -> Self {
+    pub fn heater_dur_profile(&self, dur_profile: *mut u16) -> Self {
         let mut conf = *self;
-        let mut profile: [u16; 10usize] = [0; 10];
-        profile.copy_from_slice(dur_profile);
-        conf.heatr_dur_prof = profile.as_mut_ptr();
+        conf.heatr_dur_prof = dur_profile;
         conf.profile_len = 10;
         conf
     }
@@ -590,22 +586,22 @@ impl<I: Interface> Device<I> {
 
     /// Reads the pressure, temperature humidity and gas data from the sensor,
     /// compensates the data and store it in the SensorData structure instance passed by the user.
-    pub fn get_data(&mut self, op_mode: OperationMode) -> Result<SensorData, Error> {
+    pub fn get_data(&mut self, op_mode: OperationMode) -> Result<[SensorData; 3], Error> {
         let mut n_fields = 0;
-        let mut data: SensorData = SensorData::default();
+        let mut data: [SensorData; 3] = [SensorData::default(); 3];
         unsafe {
-            self.raw_get_data(op_mode as u8, &mut data, &mut n_fields)
-                .unwrap();
+            self.raw_get_data(op_mode as u8, &mut data[0], &mut n_fields)
+                .expect("Failed to get data");
         }
         // TODO I think that this is all that's needed to verify safety
         // but look into this more.
         if n_fields != 0 {
-            if data.status == 0xA0 {
-                Err(Error::UnstableHeater)
-            } else if data.status == 0xB0 {
+            if data[0].status & 0x80 == 0x80 {
                 Ok(data)
+            } else if data[0].status & 0x10 != 0x10 {
+                Err(Error::UnstableHeater)
             } else {
-                Err(Error::Unknown)
+                Err(Error::NoNewDataFound)
             }
         } else {
             Err(Error::NoNewDataFound)
