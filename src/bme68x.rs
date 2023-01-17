@@ -590,8 +590,7 @@ impl<I: Interface> Device<I> {
         let mut n_fields = 0;
         let mut data: [SensorData; 3] = [SensorData::default(); 3];
         unsafe {
-            self.raw_get_data(op_mode as u8, &mut data[0], &mut n_fields)
-                .expect("Failed to get data");
+            self.raw_get_data(op_mode as u8, &mut data[0], &mut n_fields)?;
         }
         // TODO I think that this is all that's needed to verify safety
         // but look into this more.
