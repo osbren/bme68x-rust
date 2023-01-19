@@ -18,20 +18,14 @@ pub enum OperationMode {
     Sequential = 3,
 }
 
-impl TryFrom<u8> for OperationMode {
-    type Error = &'static str;
-
-    fn try_from(value: u8) -> Result<Self, Self::Error> {
-        if value > 3 {
-            Err("Invalid value")
-        } else {
-            Ok(match value {
-                0 => OperationMode::Sleep,
-                1 => OperationMode::Forced,
-                2 => OperationMode::Parallel,
-                3 => OperationMode::Sequential,
-                _ => OperationMode::Sleep,
-            })
+impl From<u8> for OperationMode {
+    fn from(value: u8) -> Self {
+        match value {
+            0 => OperationMode::Sleep,
+            1 => OperationMode::Forced,
+            2 => OperationMode::Parallel,
+            3 => OperationMode::Sequential,
+            _ => OperationMode::Sleep,
         }
     }
 }
