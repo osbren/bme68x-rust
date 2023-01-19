@@ -5,6 +5,7 @@ use crate::internal::*;
 
 /// Operation mode of the sensor.
 #[derive(PartialEq)]
+#[repr(u8)]
 pub enum OperationMode {
     /// No measurements are performed. Minimal power consumption.
     Sleep = 0,
@@ -15,6 +16,24 @@ pub enum OperationMode {
     /// measurement. Does not return to Sleep Mode.
     Parallel = 2,
     Sequential = 3,
+}
+
+impl TryFrom<u8> for OperationMode {
+    type Error = &'static str;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        if value > 3 {
+            Err("Invalid value")
+        } else {
+            Ok(match value {
+                0 => OperationMode::Sleep,
+                1 => OperationMode::Forced,
+                2 => OperationMode::Parallel,
+                3 => OperationMode::Sequential,
+                _ => OperationMode::Sleep,
+            })
+        }
+    }
 }
 
 /// ODR/Standby time macros
