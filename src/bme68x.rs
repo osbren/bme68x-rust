@@ -143,6 +143,8 @@ pub struct DeviceConfig {
 }
 
 /// Oversampling setting
+#[derive(Copy, Clone, Debug, PartialEq)]
+#[repr(u8)]
 pub enum Sample {
     /// Switch off measurements
     Off = 0,
@@ -156,6 +158,20 @@ pub enum Sample {
     X8 = 4,
     /// Perform 16 measurements
     X16 = 5,
+}
+
+impl From<u8> for Sample {
+    fn from(value: u8) -> Self {
+        match value {
+            0 => Sample::Off,
+            1 => Sample::Once,
+            2 => Sample::X2,
+            3 => Sample::X4,
+            4 => Sample::X8,
+            5 => Sample::X16,
+            _ => Sample::Off,
+        }
+    }
 }
 
 impl DeviceConfig {
