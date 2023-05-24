@@ -45,7 +45,7 @@ pub trait Interface {
     fn write(&mut self, _reg_addr: u8, _reg_data: &[u8]) -> Result<(), Error>;
 
     /// Function for delaying in Microseconds.
-    fn delay(&self, _us: u32);
+    fn delay(&mut self, _us: u32);
 
     #[doc(hidden)]
     unsafe fn read_raw(&mut self, reg_addr: u8, reg_data: *mut u8, len: u32) -> i8 {

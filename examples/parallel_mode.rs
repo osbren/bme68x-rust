@@ -15,7 +15,7 @@ impl Interface for SpiDriver {
         CommInterface::SPI
     }
 
-    fn delay(&self, period: u32) {
+    fn delay(&mut self, period: u32) {
         let delay = std::time::Duration::from_micros(period as u64);
         std::thread::sleep(delay);
     }
